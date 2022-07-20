@@ -19,15 +19,15 @@ public class UserClassicJDBCRepository {
     }
 
     public void addUser(User user) {
-        jdbcTemplate.update("insert into hero (userName, firstName, lastName) values (?,?,?)",
+        jdbcTemplate.update("insert into user (userName, firstName, lastName) values (?,?,?)",
                 user.getUserName(), user.getFirstName(), user.getLastName());
 
     }
 
-    public Collection<User> allHeros() {
+    public Collection<User> allUsers() {
         return jdbcTemplate.query("select * From user",
                 (resultSet, i) -> new User(i, resultSet.getString("userName"),
                                             resultSet.getString("firstName"),
-                                            resultSet.getString("universum")));
+                                            resultSet.getString("lastName")));
     }
 }

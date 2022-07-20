@@ -1,18 +1,16 @@
 package com.minejava.tcexample.repository;
 
-import java.util.Collection;
-
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import org.springframework.stereotype.Repository;
 import javax.transaction.Transactional;
-
+import java.util.Collection;
+import org.springframework.stereotype.Repository;
 
 import com.minejava.tcexample.model.User;
 
+
 @Repository
-public class UserRepositoryImpl {
+public class UserClassicJpaRepository {
     @PersistenceContext
     private EntityManager em;
 
@@ -22,11 +20,11 @@ public class UserRepositoryImpl {
     }
 
     public Collection<User> allUsers() {
-        return em.createQuery("Select user FROM User user", User.class).getResultList();
+        return em.createQuery("Select user FROM user user", User.class).getResultList();
     }
 
-    public Collection<User> findUsersBySearchCriterias(String searchCriteria) {
-        return em.createQuery("SELECT user FROM User user " +
+    public Collection<User> findUsersBySearchCriteria(String searchCriteria) {
+        return em.createQuery("SELECT user FROM user user " +
                         "where user.userName LIKE :searchCriteria OR " +
                         "user.firstName LIKE :searchCriteria OR " +
                         "user.lastName = :searchCriteria",

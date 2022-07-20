@@ -1,53 +1,73 @@
 package com.minejava.tcexample;
 
-import java.util.Collection;
-
+import org.junit.ClassRule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.minejava.tcexample.model.User;
-import com.minejava.tcexample.repository.UserRepositoryImpl;
+import com.minejava.tcexample.repository.UserClassicJpaRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+import java.util.Collection;
+
 @Testcontainers
+@SpringJUnitWebConfig
+@AutoConfigureMockMvc
+@SpringBootTest(classes = TcExampleApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = { TcExampleApplicationTests.Initializer.class })
+//@ContextConfiguration(initializers = {TcExampleApplicationTests.Initializer.class})
 public class TcExampleApplicationTests {
 
-    @Container
-    private static MySQLContainer<?> dContainer = new MySQLContainer<>("mysql:latest");
-
     @Autowired
-    UserRepositoryImpl userRepositoryImpl;
+    private UserClassicJpaRepository userRepo;
+
+    @ClassRule
+public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:latest")
+        .withInitScript("init_mysql.sql")
+        .withDatabaseName("sampleapp")
+        .withUsername("user")
+        .withPassword("password");
 
     @Test
-    void findUserByCriteria() {
-        User newUser = myUser();
-        userRepositoryImpl.addUser(newUser);
-        // Call serach criteria method
+    void findUserByCriteria(){
+        userRepo.addUser(
+            User.builder()
+                .id(3)
+                .userName("Dangoba")
+                .firstName("Sanderger")
+                .lastName("Safger")
+                .build());
 
-        Collection<User> users = userRepositoryImpl.findUsersBySearchCriteria("Mando");
-        assertThat(users).contains(newUser);
-    }
+        Collection<User> users = userRepo.findUsersBySearchCriteria("Dangoba");
 
-    private User myUser() {
-        User oneUser = User.builder()
-                .userName("Mando")
-                .firstName("Gambo")
-                .lastName("Saidouye")
-                .build();
-        return oneUser;
+        assertThat(users).contains(
+            User.builder()
+                .userName("Dangoba")
+                .firstName("Sanderger")
+                .lastName("Safger")
+                .build()
+        );
     }
-
-    @DynamicPropertySource
-    static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.database.url", dContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", dContainer::getUsername);
-        registry.add("spring.datasource", dContainer::getPassword);
+    static class Initializer
+        implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+        TestPropertyValues.of(
+                "spring.datasource.url=" + mySQLContainer.getJdbcUrl(),
+                "spring.datasource.username=" + mySQLContainer.getUsername(),
+                "spring.datasource.driver-class-name=" + mySQLContainer.getDriverClassName(),
+                "spring.jpa.database-platform=org.hibernate.dialect.MySQL8InnoDBDialect",
+                "spring.datasource.password=" + mySQLContainer.getPassword()
+        ).applyTo(configurableApplicationContext.getEnvironment());
     }
+}
 }
