@@ -22,8 +22,7 @@ import java.util.Collection;
 @Testcontainers
 @SpringJUnitWebConfig
 @AutoConfigureMockMvc
-@SpringBootTest(classes = TcExampleApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = TcExampleApplication.class)
 @ContextConfiguration(initializers = { TcExampleApplicationTests.Initializer.class })
 //@ContextConfiguration(initializers = {TcExampleApplicationTests.Initializer.class})
 public class TcExampleApplicationTests {

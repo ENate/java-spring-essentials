@@ -38,7 +38,7 @@ public class UserClassicJDBCRepositoryIT {
 
         Collection<User> users = repositoryUnderTest.allUsers();
 
-        assertThat(users).hasSize(3);
+        assertThat(users).hasSize(1);
     }
 
     @NotNull
